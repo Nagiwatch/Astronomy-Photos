@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Photos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="file"],
+        textarea,
+        input[type="text"],
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+
+        .image-container {
+            margin-top: 20px;
+        }
+
+        .image-item {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .dots-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .dots-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .dots-menu button {
+            background-color: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .dots-menu button:hover {
+            background-color: #f4f4f4;
+        }
+
+        .review-section {
+            margin-top: 20px;
+        }
+
+        .review {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .rating {
+            font-weight: bold;
+        }
+
+        #addImageSection {
+            display: none;
+        }
+
+        #toggleImageForm {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .more-reviews {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Astronomy Photos</h1>
+
+        <!-- Image Upload Section -->
+        <div id="addImageSection" class="section">
+            <h2>Add New Image</h2>
+            <form id="imageForm">
+                <label for="ownerInput">Owner's Name:</label>
+                <input type="text" id="ownerInput" required>
+                
+                <label for="imageInput">Upload Image:</label>
+                <input type="file" id="imageInput" accept="image/*" required>
+                
+                <label for="titleInput">Title (50 words max):</label>
+                <textarea id="titleInput" maxlength="250" required></textarea>
+                
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        
+        <!-- Image Display Section -->
+        <div class="section">
+            <h2>Uploaded Images</h2>
+            <div id="imageDisplay" class="image-container"></div>
+        </div>
+    </div>
+    <button id="toggleImageForm">+</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('toggleImageForm');
+            const addImageSection = document.getElementById('addImageSection');
+            const imageForm = document.getElementById('imageForm');
+            const imageDisplay = document.getElementById('imageDisplay');
+            const deletePassword = 'rutwo'; // Hide this in a real application
+
+            toggleButton.addEventListener('click', function() {
+                if (addImageSection.style.display === 'none' || addImageSection.style.display === '') {
+                    addImageSection.style.display = 'block';
+                } else {
+                    addImageSection.style.display = 'none';
+                }
+            });
+
+            imageForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const owner = document.getElementById('ownerInput').value;
+                const fileInput = document.getElementById('imageInput');
+                const title = document.getElementById('titleInput').value;
+
+                if (fileInput.files.length === 0) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+
+                    const imageItem = document.createElement('div');
+                    imageItem.classList.add('image-item');
+
+                    const imageElement = document.createElement('img');
+                    imageElement.src = imageUrl;
+                    imageItem.appendChild(imageElement);
+
+                    const titleElement = document.createElement('p');
+                    titleElement.textContent = title;
+                    imageItem.appendChild(titleElement);
+
+                    const ownerElement = document.createElement('p');
+                    ownerElement.textContent = `Owner: ${owner}`;
+                    imageItem.appendChild(ownerElement);
+
+                    const dotsButton = document.createElement('button');
+                    dotsButton.classList.add('dots-btn');
+                    dotsButton.innerHTML = '⋮';
+                    imageItem.appendChild(dotsButton);
+
+                    const dotsMenu = document.createElement('div');
+                    dotsMenu.classList.add('dots-menu');
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', function() {
+                        const password = prompt('Please enter the password to delete this image:');
+                        if (password === deletePassword) {
+                            imageItem.remove();
+                        } else {
+                            alert('Incorrect password.');
+                        }
+                    });
+                    dotsMenu.appendChild(deleteButton);
+
+                    dotsButton.addEventListener('click', function() {
+                        dotsMenu.style.display = dotsMenu.style.display === 'block' ? 'none' : 'block';
+                    });
+
+                    imageItem.appendChild(dotsMenu);
+
+                    // Review section
+                    const reviewSection = document.createElement('div');
+                    reviewSection.classList.add('review-section');
+
+                    const reviewLabel = document.createElement('label');
+                    reviewLabel.textContent = 'Rate this image:';
+                    reviewSection.appendChild(reviewLabel);
+
+                    const reviewSelect = document.createElement('select');
+                    for (let i = 1; i <= 5; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = i;
+                        reviewSelect.appendChild(option);
+                    }
+                    reviewSection.appendChild(reviewSelect);
+
+                    const reviewButton = document.createElement('button');
+                    reviewButton.textContent = 'Submit Review';
+                    reviewButton.addEventListener('click', function() {
+                        const reviewKey = `review_${imageUrl}`;
+                        if (localStorage.getItem(reviewKey)) {
+                            alert('You have already reviewed this image.');
+                        } else {
+                            const rating = reviewSelect.value;
+                            localStorage.setItem(reviewKey, rating);
+                            alert('Review submitted!');
+                        }
+                    });
+                    reviewSection.appendChild(reviewButton);
+
+                    // Show Reviews button
+                    const showReviewsButton = document.createElement('button');
+                    showReviewsButton.textContent = 'Show Reviews';
+                    showReviewsButton.addEventListener('click', function() {
+                        const reviews = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key.startsWith(`review_${imageUrl}`)) {
+                                reviews.push(localStorage.getItem(key));
+                            }
+                        }
+
+                        if (reviews.length === 0) {
+                            alert('No reviews yet.');
+                        } else {
+                            alert('Reviews: ' + reviews.join(', '));
+                        }
+                    });
+                    reviewSection.appendChild(showReviewsButton);
+
+                    imageItem.appendChild(reviewSection);
+
+                    imageDisplay.appendChild(imageItem);
+
+                    imageForm.reset();
+                    addImageSection.style.display = 'none';
+                };
+
+                reader.readAsDataURL(file);
+            });
+        });
+    </script>
+</body>
+</html>
